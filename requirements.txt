@@ -1,0 +1,2 @@
+python-telegram-bot==20.7
+elevenlabs==1.2.1
