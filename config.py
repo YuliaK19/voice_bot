@@ -1,4 +1,7 @@
 # config.py
 
 API_KEY = "sk_e8a292544e9fb02b61eee1aa088e31197acf33552572ccc1"
-BOT_TOKEN = "7802592402:AAFnwLk1l1zZg8h9-fDMJicVAQahPVm6Pbs"
+
+import os
+BOT_TOKEN = os.getenv("BOT_TOKEN")
+
