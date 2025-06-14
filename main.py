@@ -1,36 +1,30 @@
-import asyncio
+import os
 from telegram import Update
-from telegram.ext import ApplicationBuilder, MessageHandler, filters, ContextTypes
-from elevenlabs.client import ElevenLabs
-from config import API_KEY, BOT_TOKEN
+from telegram.ext import Application, CommandHandler, ContextTypes
+from config import BOT_TOKEN
 
-VOICE_ID = "EXAVITQu4vr4xnSDxMaL"  # Sarah
+# Обработчик команды /start
+async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    await update.message.reply_text("Привет! Бот работает через Webhook на Render 🎯")
 
-client = ElevenLabs(api_key=API_KEY)
+def main():
+    app = Application.builder().token(BOT_TOKEN).build()
 
-async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    if not update.message or not update.message.text:
-        return
+    app.add_handler(CommandHandler("start", start))
 
-    text = update.message.text.strip()
+    # Получаем порт, который Render выделит из переменной окружения
+    port = int(os.environ.get("PORT", 8443))
 
-    if not text:
-        await update.message.reply_text("Отправь текст для озвучки.")
-        return
+    # URL вебхука (Render подставит свой внешний адрес)
+    webhook_url = f"https://{os.environ['RENDER_EXTERNAL_HOSTNAME']}/{BOT_TOKEN}"
 
-    audio = client.text_to_speech.convert(
-        voice_id=VOICE_ID,
-        model_id="eleven_multilingual_v2",
-        text=text
+    # Запуск вебхука
+    app.run_webhook(
+        listen="0.0.0.0",
+        port=port,
+        url_path=BOT_TOKEN,
+        webhook_url=webhook_url
     )
 
-    with open("speech.mp3", "wb") as f:
-        for chunk in audio:
-            f.write(chunk)
-
-    with open("speech.mp3", "rb") as voice_file:
-        await update.message.reply_voice(voice=voice_file)
-
-app = ApplicationBuilder().token(BOT_TOKEN).build()
-app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
-app.run_polling()
+if __name__ == "__main__":
+    main()
