@@ -1,4 +1,4 @@
-# voice.py
+# voice.py — Получение списка голосов с ElevenLabs API
 
 import httpx
 from config import API_KEY
@@ -8,7 +8,11 @@ def get_voices():
     headers = {
         "xi-api-key": API_KEY,
         "accept": "application/json",
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36"
+        "User-Agent": (
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+            "AppleWebKit/537.36 (KHTML, like Gecko) "
+            "Chrome/114.0.0.0 Safari/537.36"
+        )
     }
 
     try:
@@ -16,12 +20,12 @@ def get_voices():
         response.raise_for_status()
         data = response.json()
         return [(v["voice_id"], v["name"]) for v in data.get("voices", [])]
+    
     except httpx.HTTPStatusError as exc:
-        print("Ошибка:", exc.response.status_code, exc.response.text)
+        print(f"Ошибка {exc.response.status_code}: {exc.response.text}")
         return []
 
 if __name__ == "__main__":
     voices = get_voices()
     for voice_id, name in voices:
         print(f"{name}: {voice_id}")
-
