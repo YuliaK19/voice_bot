@@ -1,4 +1,4 @@
 python-telegram-bot==20.7
-gtts==2.3.2
-
+elevenlabs==1.2.1
+httpx==0.25.2
 
