@@ -1,18 +1,15 @@
-# voice.py — Получение списка голосов с ElevenLabs API
-
+import os
 import httpx
 from config import API_KEY
+
+ELEVEN_API_URL = "https://api.elevenlabs.io/v1/text-to-speech"
+DEFAULT_VOICE_ID = "EXAVITQu4vr4xnSDxMaL"  # Можно заменить на другой ID из get_voices()
 
 def get_voices():
     url = "https://api.elevenlabs.io/v1/voices"
     headers = {
         "xi-api-key": API_KEY,
         "accept": "application/json",
-        "User-Agent": (
-            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
-            "AppleWebKit/537.36 (KHTML, like Gecko) "
-            "Chrome/114.0.0.0 Safari/537.36"
-        )
     }
 
     try:
@@ -20,12 +17,33 @@ def get_voices():
         response.raise_for_status()
         data = response.json()
         return [(v["voice_id"], v["name"]) for v in data.get("voices", [])]
-    
     except httpx.HTTPStatusError as exc:
         print(f"Ошибка {exc.response.status_code}: {exc.response.text}")
         return []
 
-if __name__ == "__main__":
-    voices = get_voices()
-    for voice_id, name in voices:
-        print(f"{name}: {voice_id}")
+def text_to_speech(text: str, voice_id: str = DEFAULT_VOICE_ID, filename="output.mp3") -> str:
+    headers = {
+        "xi-api-key": API_KEY,
+        "accept": "audio/mpeg",
+        "Content-Type": "application/json"
+    }
+
+    body = {
+        "text": text,
+        "model_id": "eleven_multilingual_v2",  # Универсальная модель
+        "voice_settings": {
+            "stability": 0.5,
+            "similarity_boost": 0.7
+        }
+    }
+
+    url = f"{ELEVEN_API_URL}/{voice_id}/stream"
+    response = httpx.post(url, headers=headers, json=body)
+
+    if response.status_code == 200:
+        with open(filename, "wb") as f:
+            f.write(response.content)
+        return filename
+    else:
+        print(f"Ошибка TTS: {response.status_code} — {response.text}")
+        return ""
