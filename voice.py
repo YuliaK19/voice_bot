@@ -43,11 +43,11 @@ def text_to_speech(text: str, voice_id: str = DEFAULT_VOICE_ID, filename="output
     response = httpx.post(url, headers=headers, json=body)
 
     if response.status_code == 200:
-        # Абсолютный путь к файлу
-        filepath = os.path.join(os.getcwd(), filename)
+        filepath = os.path.abspath(filename)  # ← Абсолютный путь
         with open(filepath, "wb") as f:
             f.write(response.content)
+        print(f"✅ Аудиофайл сохранён: {filepath}")  # ← Печатаем путь в лог
         return filepath
     else:
-        print(f"Ошибка TTS: {response.status_code} — {response.text}")
+        print(f"❌ Ошибка TTS: {response.status_code} — {response.text}")
         return ""
