@@ -1,19 +1,17 @@
 import os
 from telegram import Update
 from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes
+from voice import text_to_speech
 
 BOT_TOKEN = os.getenv("BOT_TOKEN")
-WEBHOOK_URL = "https://voice-bot-ha8n.onrender.com"  # ← Убедись, что этот адрес совпадает с твоим Render-URL
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    await update.message.reply_text("Привет! Бот запущен через Webhook на Render.")
+    text = "Привет! Это говорящий Telegram-бот."
+    text_to_speech(text)
+    await update.message.reply_text("Сообщение озвучено. Смотри в файлах — создан mp3!")
 
 app = ApplicationBuilder().token(BOT_TOKEN).build()
 app.add_handler(CommandHandler("start", start))
 
-# Важно: порт 10000 — стандартный для Render
-app.run_webhook(
-    listen="0.0.0.0",
-    port=int(os.environ.get("PORT", 10000)),
-    webhook_url=WEBHOOK_URL
-)
+if __name__ == "__main__":
+    app.run_polling()
